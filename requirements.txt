@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+sentence-transformers
+transformers
+openai-whisper
+torch
+python-multipart
