@@ -1,4 +1,8 @@
-# Receipt Insights: Embeddings & AI API
+# Embeddings & AI API
+
+<img width="681" height="509" alt="image" src="https://github.com/user-attachments/assets/e183841a-93ea-4417-9421-5762b72dcaf5" />
+
+https://github.com/user-attachments/assets/e3a70de8-8f8f-4685-995e-98704aa9001f
 
 This service provides the **"Intelligence Layer"** for the Receipt Insights platform. It is a Python/FastAPI container hosting local open-source models for **Speech-to-Text (STT)**, **Semantic Embeddings**, and **Sentiment Analysis (Vibe Check)**.
 
@@ -46,7 +50,7 @@ This service is managed by the root `docker-compose.yml`:
   embeddings-api:
     build:
       context: ./embeddings-api
-    container_name: receipt-insights-embeddings-api
+    container_name: embeddings-api
     ports:
       - "8000:8000"
 ```
