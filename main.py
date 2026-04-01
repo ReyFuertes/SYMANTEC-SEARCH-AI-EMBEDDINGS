@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, Form
 from pydantic import BaseModel
+from typing import List
 import whisper
 from sentence_transformers import SentenceTransformer
 from transformers import pipeline
@@ -13,22 +14,43 @@ app = FastAPI(
     version="1.0.0"
 )
 
+import time
+
 # --- MODEL INITIALIZATION ---
+import datetime
 
-# 1. Sentence Transformers: Converts text into 384-dimensional vectors.
-# Model 'all-MiniLM-L6-v2' is chosen for its high speed and low memory footprint while maintaining excellent semantic accuracy.
-# These vectors are used for Vector Similarity Search (VSS) in Redis Stack and pgvector.
-model_embed = SentenceTransformer('all-MiniLM-L6-v2')
+def log_milestone(message):
+    print(f"[{datetime.datetime.now().isoformat()}] [BOOTSTRAP] {message}", flush=True)
 
-# 2. OpenAI Whisper: High-accuracy Speech-to-Text (STT) model.
-# Using the 'base' model for a balanced performance/accuracy ratio on CPU.
-# This powers the voice notes on receipt uploads and natural language voice search queries.
-model_stt = whisper.load_model("base")
+def load_models():
+    try:
+        log_milestone("Process started. Beginning model initialization...")
+        
+        log_milestone("Loading Sentence Transformer model (all-MiniLM-L6-v2)...")
+        embed = SentenceTransformer('all-MiniLM-L6-v2')
+        log_milestone("Sentence Transformer loaded successfully.")
+        
+        # Switched to base.en - much more accurate for merchant names while still fast on CPU
+        log_milestone("Loading Whisper STT model (base.en)...")
+        stt = whisper.load_model("base.en")
+        log_milestone("Whisper STT loaded successfully.")
+        
+        log_milestone("Loading Sentiment Analysis model...")
+        vibe = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+        log_milestone("Sentiment Analysis loaded successfully.")
+        
+        log_milestone("ALL MODELS LOADED. Web server starting...")
+        return embed, stt, vibe
+    except Exception as e:
+        print(f"[CRITICAL ERROR] [{datetime.datetime.now().isoformat()}] Failed to load models: {str(e)}", flush=True)
+        import sys
+        sys.exit(1)
 
-# 3. Sentiment Analysis (Vibe Check): Detects the emotional tone of user input.
-# Model 'distilbert-base-uncased-finetuned-sst-2-english' is a distilled version of BERT, 
-# making it extremely fast for real-time moderation during ingestion.
-vibe_checker = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+model_embed, model_stt, vibe_checker = load_models()
+
+# --- HELPER CONSTANTS ---
+# Providing a prompt helps Whisper recognize specific context and technical terms
+STT_PROMPT = "Searching for my receipts: Jollibee, McDonald's, Starbucks, SM Store, Grab, Foodpanda, Grocery, Restaurant."
 
 # --- DATA MODELS ---
 
@@ -37,21 +59,42 @@ class TextRequest(BaseModel):
 
 # --- API ENDPOINTS ---
 
+@app.get("/health", summary="Health Check")
+async def health_check():
+    """
+    Lightweight endpoint for Azure Startup and Liveness probes.
+    """
+    print("[PROBE] Health check requested")
+    return {"status": "healthy"}
+
 @app.post("/transcribe", summary="Speech-to-Text Transcription")
 async def transcribe_audio(file: UploadFile):
     """
     Transcribes an uploaded audio file into text using OpenAI Whisper.
     Accepts common audio formats (WAV, MP3, AAC, etc.) via Multipart form data.
     """
+    start_time = time.time()
     # Create a temporary file to store the uploaded audio for Whisper processing
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         contents = await file.read()
         tmp.write(contents)
         tmp_name = tmp.name
     
+    file_save_time = time.time() - start_time
+    print(f"[PERF] File Save: {file_save_time:.2f}s", flush=True)
+
     try:
-        # Perform transcription
-        result = model_stt.transcribe(tmp_name)
+        # Perform transcription with accuracy optimizations
+        transcribe_start = time.time()
+        result = model_stt.transcribe(
+            tmp_name, 
+            fp16=False, 
+            language="en", 
+            initial_prompt=STT_PROMPT
+        )
+        transcribe_time = time.time() - transcribe_start
+        print(f"[PERF] Whisper Transcribe: {transcribe_time:.2f}s", flush=True)
+        
         return {"text": result["text"].strip()}
     finally:
         # Ensure temporary file is cleaned up after processing
@@ -64,7 +107,10 @@ async def embed_text(req: TextRequest):
     Converts a plain text string into a 384-dimensional floating-point vector.
     This vector represents the 'semantic meaning' of the text for similarity searches.
     """
+    start_time = time.time()
     vector = model_embed.encode(req.text).tolist()
+    duration = time.time() - start_time
+    print(f"[PERF] Embedding Generation: {duration:.2f}s", flush=True)
     return {"vector": vector}
 
 @app.post("/voice-search", summary="End-to-End Voice Search Pipeline")
@@ -75,16 +121,37 @@ async def voice_search(file: UploadFile):
     2. Converts that text into a vector for instant searching.
     Primarily used for the 'Smart Assistant' search feature in the mobile app.
     """
+    start_overall = time.time()
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         contents = await file.read()
         tmp.write(contents)
         tmp_name = tmp.name
         
+    file_save_time = time.time() - start_overall
+    print(f"[PERF] Voice Search - File Save: {file_save_time:.2f}s", flush=True)
+
     try:
-        # Step 1: Speech -> Text
-        transcription = model_stt.transcribe(tmp_name)["text"].strip()
+        # Step 1: Speech -> Text (with optimizations)
+        stt_start = time.time()
+        transcription_result = model_stt.transcribe(
+            tmp_name, 
+            fp16=False, 
+            language="en", 
+            initial_prompt=STT_PROMPT
+        )
+        transcription = transcription_result["text"].strip()
+        stt_time = time.time() - stt_start
+        print(f"[PERF] Voice Search - STT: {stt_time:.2f}s", flush=True)
+
         # Step 2: Text -> Semantic Vector
+        embed_start = time.time()
         vector = model_embed.encode(transcription).tolist()
+        embed_time = time.time() - embed_start
+        print(f"[PERF] Voice Search - Embed: {embed_time:.2f}s", flush=True)
+
+        total_time = time.time() - start_overall
+        print(f"[PERF] Voice Search - TOTAL: {total_time:.2f}s", flush=True)
+
         return {
             "query_text": transcription,
             "vector": vector
