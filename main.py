@@ -4,6 +4,7 @@ from typing import List
 import whisper
 from sentence_transformers import SentenceTransformer
 from transformers import pipeline
+from rank_bm25 import BM25Okapi
 import tempfile
 import os
 
@@ -57,6 +58,10 @@ STT_PROMPT = "Searching for my receipts: Jollibee, McDonald's, Starbucks, SM Sto
 class TextRequest(BaseModel):
     text: str
 
+class BM25Request(BaseModel):
+    query: str
+    documents: List[str]
+
 # --- API ENDPOINTS ---
 
 @app.get("/health", summary="Health Check")
@@ -66,6 +71,26 @@ async def health_check():
     """
     print("[PROBE] Health check requested")
     return {"status": "healthy"}
+
+@app.post("/bm25-score", summary="BM25 Text Search Scoring")
+async def bm25_score(req: BM25Request):
+    """
+    Calculates BM25 relevance scores for a query against a list of documents.
+    Used for hybrid search to complement semantic vector results.
+    """
+    start_time = time.time()
+    
+    # Simple whitespace tokenization
+    tokenized_query = req.query.lower().split()
+    tokenized_corpus = [doc.lower().split() for doc in req.documents]
+    
+    bm25 = BM25Okapi(tokenized_corpus)
+    scores = bm25.get_scores(tokenized_query).tolist()
+    
+    duration = time.time() - start_time
+    print(f"[PERF] BM25 Scoring: {duration:.4f}s for {len(req.documents)} docs", flush=True)
+    
+    return {"scores": scores}
 
 @app.post("/transcribe", summary="Speech-to-Text Transcription")
 async def transcribe_audio(file: UploadFile):
