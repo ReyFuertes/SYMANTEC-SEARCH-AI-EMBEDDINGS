@@ -2,6 +2,9 @@
 
 <img width="681" height="509" alt="image" src="https://github.com/user-attachments/assets/e183841a-93ea-4417-9421-5762b72dcaf5" />
 
+<img width="709" height="558" alt="image" src="https://github.com/user-attachments/assets/96c9d81a-5042-49f2-a2ee-550941ada571" />
+
+
 https://github.com/user-attachments/assets/e3a70de8-8f8f-4685-995e-98704aa9001f
 
 This service provides the **"Intelligence Layer"** for the Receipt Insights platform. It is a Python/FastAPI container hosting local open-source models for **Speech-to-Text (STT)**, **Semantic Embeddings**, and **Sentiment Analysis (Vibe Check)**.
