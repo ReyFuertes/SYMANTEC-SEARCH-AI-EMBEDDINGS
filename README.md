@@ -50,7 +50,7 @@ This service is managed by the root `docker-compose.yml`:
   embeddings-api:
     build:
       context: ./embeddings-api
-    container_name: embeddings-api
+    container_name: receipt-insights-embeddings-api
     ports:
       - "8000:8000"
 ```
