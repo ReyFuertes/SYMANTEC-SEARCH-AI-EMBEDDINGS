@@ -1,0 +1,57 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f8f9fa" rx="10" ry="10"/>
+  
+  <!-- Title -->
+  <text x="400" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#343a40">Symantec Search AI: Architecture Updates</text>
+  
+  <!-- Commit 3: Search (Top Layer) -->
+  <g transform="translate(100, 80)">
+    <rect width="600" height="140" fill="#e8daef" stroke="#8e44ad" stroke-width="2" rx="8" ry="8"/>
+    <text x="20" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#8e44ad">3. Search &amp; Ranking (feat/search)</text>
+    <rect x="40" y="50" width="150" height="60" fill="#fff" stroke="#8e44ad" rx="5" ry="5"/>
+    <text x="115" y="85" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#8e44ad">BM25 Scoring</text>
+    <rect x="210" y="50" width="150" height="60" fill="#fff" stroke="#8e44ad" rx="5" ry="5"/>
+    <text x="285" y="85" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#8e44ad">Hybrid Search</text>
+    <rect x="380" y="50" width="180" height="60" fill="#fff" stroke="#8e44ad" rx="5" ry="5"/>
+    <text x="470" y="85" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#8e44ad">rank-bm25 Lib</text>
+  </g>
+
+  <!-- Commit 2: Core (Middle Layer) -->
+  <g transform="translate(100, 240)">
+    <rect width="600" height="140" fill="#fef9e7" stroke="#f39c12" stroke-width="2" rx="8" ry="8"/>
+    <text x="20" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#d68910">2. Core &amp; Monitoring (feat/core)</text>
+    <rect x="40" y="50" width="150" height="60" fill="#fff" stroke="#f39c12" rx="5" ry="5"/>
+    <text x="115" y="85" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#d68910">/health Endpoint</text>
+    <rect x="210" y="50" width="150" height="60" fill="#fff" stroke="#f39c12" rx="5" ry="5"/>
+    <text x="285" y="85" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#d68910">Perf Monitoring</text>
+    <rect x="380" y="50" width="180" height="60" fill="#fff" stroke="#f39c12" rx="5" ry="5"/>
+    <text x="470" y="85" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#d68910">Bootstrap Logs</text>
+  </g>
+
+  <!-- Commit 1: Infrastructure (Bottom Layer) -->
+  <g transform="translate(100, 400)">
+    <rect width="600" height="140" fill="#d6eaf8" stroke="#2980b9" stroke-width="2" rx="8" ry="8"/>
+    <text x="20" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2980b9">1. Infrastructure (chore/infra)</text>
+    <rect x="40" y="50" width="150" height="60" fill="#fff" stroke="#2980b9" rx="5" ry="5"/>
+    <text x="115" y="85" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#2980b9">Model Caching</text>
+    <rect x="210" y="50" width="150" height="60" fill="#fff" stroke="#2980b9" rx="5" ry="5"/>
+    <text x="285" y="85" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#2980b9">Docker Optimize</text>
+    <rect x="380" y="50" width="180" height="60" fill="#fff" stroke="#2980b9" rx="5" ry="5"/>
+    <text x="470" y="85" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#2980b9">Container Renaming</text>
+  </g>
+
+  <!-- Connecting Arrows (Logic Flow) -->
+  <line x1="400" y1="220" x2="400" y2="240" stroke="#ccc" stroke-width="4" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="380" x2="400" y2="400" stroke="#ccc" stroke-width="4" marker-end="url(#arrowhead)"/>
+
+  <!-- Marker Definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#ccc" />
+    </marker>
+  </defs>
+  
+  <!-- Legend/Status -->
+  <text x="400" y="570" font-family="Arial, sans-serif" font-size="12" font-style="italic" text-anchor="middle" fill="#7f8c8d">Successfully committed and verified: master branch +3 commits ahead of origin.</text>
+</svg>
